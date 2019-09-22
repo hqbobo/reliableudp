@@ -19,14 +19,14 @@ func (*defaultLogger) init() {
 
 }
 
-func (this *defaultLogger) Debug(v ...interface{})  { log.Debug(v...) }
-func (this *defaultLogger) Info(v ...interface{})   { log.Info(v...) }
-func (this *defaultLogger) Notice(v ...interface{}) { log.Notice(v...) }
-func (this *defaultLogger) Warn(v ...interface{})   { log.Warn(v...) }
-func (this *defaultLogger) Error(v ...interface{})  { log.Error(v...) }
-func (this *defaultLogger) Panic(v ...interface{})  { log.Panic(v...) }
-func (this *defaultLogger) Alert(v ...interface{})  { log.Alert(v...) }
-func (this *defaultLogger) Fatal(v ...interface{})  { log.Fatal(v...) }
+func (this *defaultLogger) Debug(v ...interface{})  { log.Debuglogger(v...) }
+func (this *defaultLogger) Info(v ...interface{})   { log.Infologger(v...) }
+func (this *defaultLogger) Notice(v ...interface{}) { log.Noticelogger(v...) }
+func (this *defaultLogger) Warn(v ...interface{})   { log.Warnlogger(v...) }
+func (this *defaultLogger) Error(v ...interface{})  { log.Errorlogger(v...) }
+func (this *defaultLogger) Panic(v ...interface{})  { log.Paniclogger(v...) }
+func (this *defaultLogger) Alert(v ...interface{})  { log.Alertlogger(v...) }
+func (this *defaultLogger) Fatal(v ...interface{})  { log.Fatallogger(v...) }
 
 
 var glog logger

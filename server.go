@@ -20,7 +20,7 @@ type session struct {
 	buf  map[uint32]*protobuffer
 }
 
-func (this *session) Add(data []byte, reader udpreader) {
+func (this *session) Add(data []byte, reader udpreader) *proto {
 	p := parseProto(data)
 	if val, ok := this.buf[p.uni]; ok {
 		val.addProto(p)
@@ -35,6 +35,7 @@ func (this *session) Add(data []byte, reader udpreader) {
 		this.buf[p.uni] = newProtobuffer()
 		this.buf[p.uni].addProto(p)
 	}
+	return p
 }
 
 func newSession(addr net.Addr) *session {
@@ -56,7 +57,11 @@ type sessionMng struct {
 
 func (this *sessionMng) Add(addr net.Addr, data []byte) {
 	if val, ok := this.sessions[addr.String()]; ok {
-		val.Add(data, this.reader)
+		p := val.Add(data, this.reader)
+		if p.types == types_trans {
+			glog.Debug("send ",p.seq,"-", p.uni)
+			this.sendAck(addr.(*net.UDPAddr) , newSeqAck(p.seq, p.uni).ToByte())
+		}
 	} else {
 		sess := newSession(addr)
 		this.sessions[addr.String()] = sess
@@ -64,8 +69,21 @@ func (this *sessionMng) Add(addr net.Addr, data []byte) {
 	}
 }
 
-func (this *Server) recv() {
+func (this *sessionMng) sendAck(addr *net.UDPAddr, data []byte){
+	conn, err := net.Dial("udp", fmt.Sprintf("%s:%d", addr.IP, addr.Port +1))
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	defer conn.Close()
+	_ , e := conn.Write(data)
+	if e != nil {
+		glog.Warn(e)
+	}
+}
 
+
+func (this *Server) recv() {
 	for {
 		if this.exit {
 			break
@@ -75,13 +93,11 @@ func (this *Server) recv() {
 		if err != nil {
 			glog.Warn("from ReadFromUDP:", err)
 		} else {
-			//glog.Debug(raddr.String(), "-recv:", len(buf[0:n]))
+			glog.Debug(raddr.String(), "-recv:", n)
 			this.mng.Add(raddr, buf[0:n])
 		}
-
 	}
 }
-
 func (this *Server) init() {
 	var err error
 	if this.local, err = net.ResolveUDPAddr("udp", fmt.Sprintf("%s:%d", this.ip, this.port)); err != nil {

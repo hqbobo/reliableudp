@@ -10,7 +10,7 @@ type udpreader interface {
 }
 
 func init() {
-	log.InitLog(true ,log.AllLevels...)
+	log.InitLog(log.AllLevels...)
 	log.SetCode(true)
 	log.SetPathFilter("github.com/hqbobo/")
 	glog = &defaultLogger{}
